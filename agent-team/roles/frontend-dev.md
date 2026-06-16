@@ -47,6 +47,14 @@ frontend:
   language: "typescript"    # typescript | javascript
 ```
 
+### Step 0.5：读取共享上下文和知识库
+1. 读取 `agent-team/knowledge/context.md` — 了解项目技术栈、结构、当前状态
+2. 读取 `agent-team/knowledge/learned-lessons.md` 中的"前端陷阱"分类 — 避免重蹈覆辙
+3. 特别关注：
+   - MD-xxx：MD 渲染陷阱（`\n` 转义、深色模式、双字段不一致）
+   - BUILD-xxx：构建陷阱（dist 旧产物、chunk 分割）
+   - VUE-xxx：Vue + Element Plus 常见问题
+
 ### Step 1：阅读输入材料
 - 阅读 PRD（01-需求评估报告.md），理解交互需求
 - 阅读 API 文档（03-前端接口文档.md），确认接口契约

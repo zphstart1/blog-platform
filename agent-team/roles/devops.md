@@ -33,13 +33,24 @@
 
 收到 Team Lead 的上线任务后：
 
-### Step 0：读取集成配置
+### Step 0：读取集成配置 + 共享上下文 + 知识库
 先从 `integrations/user-config.yml` 读取用户填写的部署环境信息：
 - `deploy`：部署目标（K8s/SSH/Cloud Studio/Lighthouse）
 - `registry`：镜像仓库地址和认证
 - `database`：数据库连接信息
 - `monitor`：监控系统接入方式
 - 对 `enabled: false` 的集成点 → 生成手动执行清单，不强制依赖
+
+额外必读：
+- 读取 `agent-team/knowledge/context.md` — 了解当前系统运行状态
+- 读取 `agent-team/knowledge/learned-lessons.md` 中的"DevOps 陷阱"分类
+- 特别关注 OPS-001（Docker Hub 网络）、OPS-002（nginx volume 延迟）、OPS-003（镜像仓库认证）
+
+### Step 0.5：检查 CI/CD 状态
+如项目有 `.github/workflows/ci.yml` 配置：
+- 检查 CI 是否已通过（Lint + Build + Test）
+- CI 不通过时拒绝部署，通知 Team Lead
+- 手动部署时执行质量门禁 Gate 4-5（`agent-team/protocols/quality-gates.md`）
 
 ### Step 1：编写上线方案
 写入 `docs/{req-name}/07-上线方案.md`，包含：

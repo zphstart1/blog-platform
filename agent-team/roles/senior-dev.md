@@ -40,6 +40,11 @@
 - `build`：构建方式（Maven/Gradle）和 JDK 版本
 - 如果 `build.enabled: false` → 仅产出源码，附编译指令
 
+### Step 0.5：读取共享上下文和知识库
+1. 读取 `agent-team/knowledge/context.md` — 了解项目技术栈、结构、当前状态
+2. 读取 `agent-team/knowledge/learned-lessons.md` 中的"后端陷阱"分类 — 避免重蹈覆辙
+3. 关注 JAVA-xxx 系列陷阱：阅读量计数、缓存绕过后处理、字段引用点遗漏
+
 ### Step 1：分析技术方案
 仔细阅读架构师提供的技术方案，确认理解所有实现细节。
 

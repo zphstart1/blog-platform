@@ -1,11 +1,12 @@
 # ============================================
-# Agent 研发团队集群配置文件
+# Agent 研发团队集群配置文件 v4
 # ============================================
 # 你只需与 Team Lead 交互，由 TA 驱动整个团队完成交付
+# v4 新增：复杂度评估跳转 + 质量门禁 + 知识库 + 直接通信
 
 team:
   name: "dev-team"
-  description: "全栈研发团队 - 从需求到上线的完整交付流水线"
+  description: "全栈研发团队 v4 - 智能复杂度评估 + 自动化质量门禁 + 自学习知识库"
 
 # 团队成员定义
 members:
@@ -31,39 +32,47 @@ members:
     role: "Java资深开发"
     level: "member"
     description: "负责代码实现、单元测试编写、技术方案落地"
-    communicates_with: ["team-lead"]
+    communicates_with: ["team-lead", "qa-tester", "frontend-dev"]
     
   - id: "frontend-dev"
     role: "资深前端开发"
     level: "member"
     description: "负责前端页面开发、接口联调、组件封装、前端自检"
-    communicates_with: ["team-lead"]
+    communicates_with: ["team-lead", "senior-dev", "qa-tester"]
     
   - id: "qa-tester"
     role: "测试工程师"
     level: "member"
-    description: "负责测试用例设计、功能测试、回归测试、质量报告"
-    communicates_with: ["team-lead"]
+    description: "负责测试用例设计、功能测试、回归测试、质量报告、自动化门禁"
+    communicates_with: ["team-lead", "senior-dev", "frontend-dev", "devops"]
     
   - id: "devops"
     role: "运维工程师"
     level: "member"
-    description: "负责部署上线、环境管理、监控告警、回滚方案"
-    communicates_with: ["team-lead"]
+    description: "负责部署上线、环境管理、监控告警、回滚方案、CI/CD 门禁"
+    communicates_with: ["team-lead", "qa-tester"]
 
-# 完整交付流水线
+# 完整交付流水线（v4：含复杂度评估 + 知识回写）
 pipeline:
   stages:
+    - name: "复杂度评估"
+      owner: "team-lead"
+      description: "评估任务复杂度，决定跳转策略。规则见 workflows/complexity-assessment.md"
+      skip_condition: "无（所有任务必过此节点）"
+      
     - name: "需求评审"
       owner: "product-manager"
       reviewer: "team-lead"
       output: "PRD 文档 + 需求评审报告"
+      skip_if: "Tiny 或 Small 任务"
       
     - name: "技术方案"
       owner: "architect"
       reviewer: "team-lead"
       input: "PRD 文档"
       output: "技术设计文档 + 接口文档 + 数据库设计"
+      skip_if: "Tiny 任务"
+      simplified_if: "Small 任务（仅出影响范围和实现方向）"
       
     - name: "代码实现"
       owners: ["senior-dev", "frontend-dev"]
@@ -71,20 +80,29 @@ pipeline:
       reviewer: "team-lead"
       input: "技术设计文档"
       output: "后端代码 + 单元测试 + 前端代码"
+      quality_gates: ["Gate 1: Lint", "Gate 2: Build"]
       
     - name: "测试验证"
       owner: "qa-tester"
       reviewer: "team-lead"
       input: "功能代码 + 技术设计文档"
       output: "测试报告 + Bug 清单"
+      quality_gates: ["Gate 3: Test Coverage", "Gate 4: Browser"]
       
     - name: "部署上线"
       owner: "devops"
       reviewer: "team-lead"
       input: "通过测试的代码 + 上线方案"
       output: "上线完成确认 + 监控配置"
+      quality_gates: ["Gate 4: Browser", "Gate 5: Health Check"]
       
     - name: "交付产品"
       owner: "team-lead"
       input: "所有阶段输出"
       output: "交付报告 + 知识沉淀文档"
+      
+    - name: "知识回写"
+      owner: "team-lead"
+      input: "本任务所有发现"
+      output: "更新 knowledge/learned-lessons.md 和 knowledge/context.md"
+      description: "追加新陷阱、更新项目状态、确认已有经验"

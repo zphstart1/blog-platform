@@ -9,7 +9,9 @@
 > **这不是一个普通的博客项目，它展示了 AI Agent 团队协作开发的完整范式。**
 
 - 🤖 **多 Agent 协作**：产品经理、架构师、前后端开发、测试、运维共 7 个角色分工协作
-- 🔄 **6 阶段流水线**：需求评审 → 技术方案 → 代码实现 → 测试验证 → 部署上线 → 交付产品
+- 🔄 **智能流水线**：复杂度评估 → 需求评审 → 技术方案 → 代码实现 → 测试验证 → 部署上线 → 交付产品
+- 🛡️ **自动化质量门禁**：5 道检查点（Lint → Build → Test → Browser → Health），不通过自动阻断
+- 📚 **自学习知识库**：每次任务自动注入历史陷阱，完成后回写新发现
 - 📋 **10 份交付文档**：从 PRD 到知识沉淀的完整项目资产
 - 🚀 **一键部署**：Docker Compose 本地化部署，前端 Nginx + 后端 Spring Boot + MySQL + Redis
 
@@ -41,12 +43,15 @@ blog-platform/
 ├── nginx/                      # Nginx 反向代理配置
 ├── docker-compose.yml          # Docker 一键部署
 ├── docs/blog/                  # 📋 10 份完整交付文档
-├── agent-team/                 # 🤖 Agent 研发团队配置
-│   ├── roles/                  # 7 个角色 Prompt 定义
-│   ├── workflows/              # 6 阶段流水线
+├── agent-team/                 # 🤖 Agent 研发团队配置 (v4)
+│   ├── roles/                  # 7 个角色 Prompt 定义（v4：知识注入）
+│   ├── workflows/              # 6 阶段流水线（v4：复杂度评估跳转）
+│   ├── protocols/              # 通讯协议 + 质量门禁（v4：直接通信）
+│   ├── knowledge/              # 🆕 共享知识库（自学习系统）
+│   ├── scripts/                # 🆕 质量门禁自动化脚本
 │   ├── integrations/           # 外部集成配置
-│   ├── protocols/              # 团队通讯协议
 │   └── team-config.yml         # 团队总控配置
+├── .github/workflows/          # 🆕 CI/CD 自动流水线
 └── workflow/                   # n8n 工作流 + 本机部署方案
 ```
 
@@ -127,14 +132,16 @@ docs/blog/
 "帮我开发一个用户管理模块，包含注册、登录、权限管理"
 "给博客添加文章点赞功能"
 "优化首页加载速度"
+"改一下页面上的按钮颜色"         ← v4：Tiny 任务自动跳过评审阶段
 ```
 
 我会自动：
-1. 分析需求复杂度
-2. 按需创建对应角色的 Agent
-3. 按 6 阶段流水线推进
-4. 每个阶段完成时主动通知你
-5. 最终交付代码 + 文档
+1. **分析需求复杂度**（Tiny/Small/Medium/Large/XLarge），决定跳转策略
+2. **注入历史经验** — 从 `knowledge/learned-lessons.md` 读取相关陷阱
+3. 按需创建对应角色的 Agent
+4. 按流水线推进（Tiny 任务跳过评审，直接编码）
+5. 每个阶段完成时主动通知你
+6. 最终交付代码 + 文档 + **回写知识库**
 
 ### 自定义配置
 
@@ -158,6 +165,19 @@ deploy:
 ```
 
 **修改流水线**：编辑 `agent-team/workflows/pipeline.md` 和 `agent-team/team-config.yml`。
+
+**查看质量门禁**：编辑 `agent-team/protocols/quality-gates.md` 自定义检查标准。
+
+### CI/CD 自动流水线
+
+项目配置了 GitHub Actions，推送代码到 `master` 分支时自动执行：
+
+```yaml
+.github/workflows/ci.yml:
+  前端: vue-tsc 类型检查 → npm build → 验证产物
+  后端: mvn compile → mvn test → mvn package → 验证 JAR
+  全部通过 → ✅ 可安全部署
+```
 
 ### 独立使用
 

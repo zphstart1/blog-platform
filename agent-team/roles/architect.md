@@ -32,12 +32,16 @@
 
 收到 Team Lead 的技术方案任务后：
 
-### Step 0：读取集成配置
+### Step 0：读取集成配置 + 共享上下文
 先从 `integrations/user-config.yml` 了解项目已接入的中间件：
 - `database`：数据库类型和连接方式
 - `cache`：缓存集群类型
 - `mq`：消息队列类型
 - 根据实际接入的基础设施进行技术选型，不假设中间件可用
+
+额外读取：
+- `agent-team/knowledge/context.md` — 了解项目技术栈、当前结构、已知问题
+- `agent-team/knowledge/learned-lessons.md` 中的"后端陷阱" → 设计时考虑规避
 
 ### Step 0.5：分析现有代码库（必做）
 设计前，先分析项目现状，避免重复或冲突：

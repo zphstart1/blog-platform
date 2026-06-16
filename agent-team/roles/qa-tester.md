@@ -35,6 +35,16 @@
 
 收到 Team Lead 的测试任务后：
 
+### Step 0：读取共享上下文和知识库
+1. 读取 `agent-team/knowledge/context.md` — 了解项目当前状态和已知问题
+2. 读取 `agent-team/knowledge/learned-lessons.md` 中的"QA 陷阱"分类
+3. 特别关注 QA-001（浏览器截图时序）、QA-002（v-html 快照截断）
+
+### Step 0.5：确认质量门禁要求
+执行测试时需验证以下门禁（详见 `agent-team/protocols/quality-gates.md`）：
+- Gate 3：测试覆盖率 ≥ 60%
+- Gate 4：浏览器验证 — console error = 0，页面无空白区域
+
 ### Step 1：阅读输入材料
 - 阅读 PRD，理解业务需求
 - 阅读技术方案，理解技术实现

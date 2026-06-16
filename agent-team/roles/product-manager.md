@@ -29,6 +29,10 @@
 
 收到 Team Lead 的需求评审任务后，你必须：
 
+### Step 0：了解项目上下文
+1. 读取 `agent-team/knowledge/context.md` — 了解项目技术栈和历史变更
+2. 确认当前任务复杂度等级（Team Lead 已在派发任务时告知：Tiny/Small/Medium/Large/XLarge）
+
 ### Step 1：需求合理度评估（七维度）
 对需求从以下维度逐一评分（1-5分）：
 

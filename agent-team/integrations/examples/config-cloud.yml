@@ -1,0 +1,117 @@
+# 示例：生产级云服务环境
+# 适合正式团队项目
+
+frontend:
+  framework: "react"
+  language: "typescript"
+
+vcs:
+  enabled: true
+  provider: "gitlab"
+  repository: "git@gitlab.company.com:backend/core-service.git"
+  remote: "origin"
+  defaultBranch: "main"
+  auth:
+    type: "ssh"
+    sshKey: "~/.ssh/gitlab_deploy_key"
+  branchStrategy:
+    featurePrefix: "feature/"
+    bugfixPrefix: "bugfix/"
+    releasePrefix: "release/"
+
+database:
+  enabled: true
+  provider: "mysql"
+  host: "rds-mysql-prod.internal.company.com"
+  port: 3306
+  database: "core_service"
+  username: "app_user"
+  password: "${DB_PASSWORD}"       # 建议用环境变量
+  charset: "utf8mb4"
+  pool:
+    minIdle: 10
+    maxActive: 50
+
+cache:
+  enabled: true
+  provider: "redis-cluster"
+  mode: "cluster"
+  cluster:
+    nodes:
+      - host: "redis-node1.internal.company.com"
+        port: 6379
+      - host: "redis-node2.internal.company.com"
+        port: 6379
+      - host: "redis-node3.internal.company.com"
+        port: 6379
+    password: "${REDIS_PASSWORD}"
+  pool:
+    maxTotal: 30
+    maxIdle: 10
+    minIdle: 5
+
+mq:
+  enabled: true
+  provider: "kafka"
+  bootstrap:
+    - "kafka-1.internal.company.com:9092"
+    - "kafka-2.internal.company.com:9092"
+    - "kafka-3.internal.company.com:9092"
+  producer:
+    topicPrefix: "core_service"
+    acks: "all"
+  consumer:
+    groupId: "core-service-group"
+    autoOffsetReset: "earliest"
+
+build:
+  enabled: true
+  provider: "maven"
+  maven:
+    settingsFile: "/etc/maven/settings.xml"
+    jdk: "11"
+    options: "-T 4C"
+
+registry:
+  enabled: true
+  provider: "harbor"
+  url: "harbor.company.com"
+  namespace: "backend"
+  auth:
+    username: "ci-bot"
+    password: "${HARBOR_PASSWORD}"
+  image:
+    name: "core-service"
+    tag: "${CI_COMMIT_SHORT_SHA}"
+
+deploy:
+  enabled: true
+  provider: "k8s"
+  strategy: "rolling"
+  k8s:
+    kubeconfig: "~/.kube/config-prod"
+    namespace: "backend-prod"
+  replicas: 3
+  healthCheck:
+    path: "/actuator/health"
+    initialDelay: 30
+    period: 10
+
+monitor:
+  enabled: true
+  provider: "prometheus"
+  prometheus:
+    endpoint: "http://prometheus.monitoring.svc:9090"
+    scrapeInterval: "15s"
+  grafana:
+    url: "https://grafana.company.com"
+    dashboardUid: "core-service-overview"
+  alert:
+    channels:
+      - type: "webhook"
+        url: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx"
+      - type: "email"
+        to: "oncall@company.com"
+  log:
+    collector: "elasticsearch"
+    endpoint: "http://elasticsearch.logging.svc:9200"

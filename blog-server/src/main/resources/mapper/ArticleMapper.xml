@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.ArticleMapper">
+
+    <!-- 文章VO resultMap — 包含分类/标签/作者关联数据 -->
+    <resultMap id="articleVOResultMap" type="com.blog.vo.ArticleVO">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="slug" column="slug"/>
+        <result property="summary" column="summary"/>
+        <result property="coverImage" column="cover_image"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="isTop" column="is_top"/>
+        <result property="publishedAt" column="published_at"/>
+        <result property="status" column="status"/>
+        <result property="content" column="content"/>
+        <result property="contentHtml" column="content_html"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="relevanceScore" column="relevance_score"/>
+        <association property="category" javaType="com.blog.vo.CategoryVO">
+            <id property="id" column="cat_id"/>
+            <result property="name" column="cat_name"/>
+            <result property="slug" column="cat_slug"/>
+        </association>
+        <association property="author" javaType="com.blog.vo.AuthorVO">
+            <id property="id" column="author_id"/>
+            <result property="nickname" column="author_nickname"/>
+            <result property="avatar" column="author_avatar"/>
+        </association>
+        <collection property="tags" ofType="com.blog.vo.TagVO">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+            <result property="slug" column="tag_slug"/>
+        </collection>
+    </resultMap>
+
+    <!-- 公开文章列表 SQL -->
+    <select id="selectPublicArticlePage" resultMap="articleVOResultMap">
+        SELECT
+            a.id, a.title, a.slug, a.summary, a.cover_image,
+            a.view_count, a.is_top, a.published_at, a.status,
+            c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug,
+            u.id AS author_id, u.nickname AS author_nickname, u.avatar AS author_avatar,
+            t.id AS tag_id, t.name AS tag_name, t.slug AS tag_slug
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN user u ON a.author_id = u.id
+        LEFT JOIN article_tag at2 ON a.id = at2.article_id
+        LEFT JOIN tag t ON at2.tag_id = t.id
+        WHERE a.status = 'PUBLISHED'
+        <if test="categoryId != null">
+            AND a.category_id = #{categoryId}
+        </if>
+        <if test="tagId != null">
+            AND at2.tag_id = #{tagId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND a.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY
+        <choose>
+            <when test="sortField == 'viewCount'">a.view_count</when>
+            <otherwise>a.published_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'asc'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>,
+        a.is_top DESC
+    </select>
+
+    <!-- 管理端文章列表 SQL -->
+    <select id="selectAdminArticlePage" resultMap="articleVOResultMap">
+        SELECT
+            a.id, a.title, a.slug, a.summary, a.cover_image,
+            a.view_count, a.is_top, a.published_at, a.status,
+            c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug,
+            u.id AS author_id, u.nickname AS author_nickname, u.avatar AS author_avatar,
+            t.id AS tag_id, t.name AS tag_name, t.slug AS tag_slug
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN user u ON a.author_id = u.id
+        LEFT JOIN article_tag at2 ON a.id = at2.article_id
+        LEFT JOIN tag t ON at2.tag_id = t.id
+        <where>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="categoryId != null">
+                AND a.category_id = #{categoryId}
+            </if>
+            <if test="authorId != null">
+                AND a.author_id = #{authorId}
+            </if>
+        </where>
+        ORDER BY a.updated_at DESC
+    </select>
+
+    <!-- 文章详情 SQL -->
+    <select id="selectArticleDetailBySlug" resultMap="articleVOResultMap">
+        SELECT
+            a.id, a.title, a.slug, a.summary, a.cover_image,
+            a.content, a.content_html,
+            a.view_count, a.is_top, a.published_at, a.created_at, a.updated_at, a.status,
+            c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug,
+            u.id AS author_id, u.nickname AS author_nickname, u.avatar AS author_avatar,
+            t.id AS tag_id, t.name AS tag_name, t.slug AS tag_slug
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN user u ON a.author_id = u.id
+        LEFT JOIN article_tag at2 ON a.id = at2.article_id
+        LEFT JOIN tag t ON at2.tag_id = t.id
+        WHERE a.slug = #{slug}
+    </select>
+
+    <!-- 全文搜索 SQL — MySQL FULLTEXT MATCH AGAINST -->
+    <select id="selectSearchPage" resultMap="articleVOResultMap">
+        SELECT
+            a.id, a.title, a.slug, a.summary, a.cover_image,
+            a.view_count, a.is_top, a.published_at, a.status,
+            MATCH(a.title, a.content) AGAINST(#{keyword} IN BOOLEAN MODE) AS relevance_score,
+            c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug,
+            u.id AS author_id, u.nickname AS author_nickname, u.avatar AS author_avatar,
+            t.id AS tag_id, t.name AS tag_name, t.slug AS tag_slug
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN user u ON a.author_id = u.id
+        LEFT JOIN article_tag at2 ON a.id = at2.article_id
+        LEFT JOIN tag t ON at2.tag_id = t.id
+        WHERE a.status = 'PUBLISHED'
+            AND MATCH(a.title, a.content) AGAINST(#{keyword} IN BOOLEAN MODE)
+        ORDER BY relevance_score DESC, a.published_at DESC
+    </select>
+
+    <!-- 管理端按ID查文章详情 — 不限状态，用于编辑回填 -->
+    <select id="selectAdminArticleById" resultMap="articleVOResultMap">
+        SELECT
+            a.id, a.title, a.slug, a.summary, a.cover_image,
+            a.content, a.content_html,
+            a.view_count, a.is_top, a.published_at, a.created_at, a.updated_at, a.status,
+            a.category_id, a.author_id,
+            c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug,
+            u.id AS author_id, u.nickname AS author_nickname, u.avatar AS author_avatar,
+            t.id AS tag_id, t.name AS tag_name, t.slug AS tag_slug
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN user u ON a.author_id = u.id
+        LEFT JOIN article_tag at2 ON a.id = at2.article_id
+        LEFT JOIN tag t ON at2.tag_id = t.id
+        WHERE a.id = #{id}
+    </select>
+
+</mapper>

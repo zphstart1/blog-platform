@@ -1,0 +1,42 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+  redis:
+    host: localhost
+    port: 6379
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: BlogPlatformSecretKey2026ForJwtTokenGenerationMinimum256BitsRequired!!
+  expiration: 604800000
+
+upload:
+  image-path: ./test-upload
+  allowed-types: jpg,jpeg,png,gif,webp
+  max-size: 5242880
+
+rate-limit:
+  comment-visitor-per-minute: 3
+  comment-user-per-minute: 5
+  login-fail-per-15min: 5
+
+logging:
+  level:
+    com.blog: INFO

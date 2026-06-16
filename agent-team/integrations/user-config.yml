@@ -1,0 +1,75 @@
+# ==========================================
+# 外部集成配置（用户自行填写）
+# ==========================================
+# 复制此文件，填入你自己的环境信息。
+# 团队产出代码和脚本时会读取此配置。
+# 不填的集成点标记 enabled: false 即可跳过。
+
+# --- 前端技术栈 ---
+frontend:
+  framework: "vue"          # react | vue | miniprogram
+  language: "typescript"    # typescript | javascript
+
+# --- 版本控制 ---
+vcs:
+  enabled: false
+  # provider: "gitlab"
+  # repository: "git@gitlab.com:your-team/your-repo.git"
+  # auth:
+  #   type: "ssh"
+  #   sshKey: "~/.ssh/id_rsa"
+  # branchStrategy:
+  #   featurePrefix: "feature/"
+  #   bugfixPrefix: "bugfix/"
+
+# --- 数据库 ---
+database:
+  enabled: false
+  # provider: "mysql"
+  # host: "127.0.0.1"
+  # port: 3306
+  # database: "mydb"
+  # username: "root"
+  # password: ""
+
+# --- 缓存 ---
+cache:
+  enabled: false
+  # provider: "redis"
+  # standalone:
+  #   host: "127.0.0.1"
+  #   port: 6379
+  #   password: ""
+
+# --- 消息队列 ---
+mq:
+  enabled: false
+  # provider: "kafka"
+  # bootstrap:
+  #   - "127.0.0.1:9092"
+
+# --- 构建服务 ---
+build:
+  enabled: false
+  # provider: "maven"
+  # maven:
+  #   jdk: "11"
+
+# --- 镜像仓库 ---
+registry:
+  enabled: false
+  # provider: "dockerhub"
+  # namespace: "your-team"
+
+# --- 部署目标 ---
+deploy:
+  enabled: false
+  # provider: "k8s"
+  # k8s:
+  #   kubeconfig: "~/.kube/config"
+  #   namespace: "default"
+
+# --- 监控系统 ---
+monitor:
+  enabled: false
+  # provider: "prometheus"

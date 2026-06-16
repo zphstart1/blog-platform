@@ -1,0 +1,59 @@
+# 示例：本地开发环境
+# 适合个人开发/学习场景
+
+frontend:
+  framework: "react"
+  language: "typescript"
+
+vcs:
+  enabled: true
+  provider: "github"
+  repository: "git@github.com:yourname/demo.git"
+  remote: "origin"
+  defaultBranch: "main"
+  auth:
+    type: "ssh"
+    sshKey: "~/.ssh/id_rsa"
+  branchStrategy:
+    featurePrefix: "feature/"
+    bugfixPrefix: "bugfix/"
+    releasePrefix: "release/"
+
+database:
+  enabled: true
+  provider: "mysql"
+  host: "127.0.0.1"
+  port: 3306
+  database: "demo_dev"
+  username: "root"
+  password: "root123"
+  charset: "utf8mb4"
+
+cache:
+  enabled: true
+  provider: "redis"
+  mode: "standalone"
+  standalone:
+    host: "127.0.0.1"
+    port: 6379
+    password: ""
+    database: 0
+
+mq:
+  enabled: false          # 本地不便运行 Kafka，关闭
+
+build:
+  enabled: true
+  provider: "maven"
+  maven:
+    jdk: "11"
+    options: ""
+
+registry:
+  enabled: false          # 本地跳过
+
+deploy:
+  enabled: false          # 本地跳过
+
+monitor:
+  enabled: false          # 本地跳过

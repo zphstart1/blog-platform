@@ -1,0 +1,24 @@
+{
+  "name": "blog-nuxt",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.12.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "@nuxtjs/sitemap": "^5.0.0",
+    "axios": "^1.7.0",
+    "dayjs": "^1.11.0"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^3.12.0",
+    "typescript": "^5.4.0"
+  }
+}

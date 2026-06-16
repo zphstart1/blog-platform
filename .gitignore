@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes / data
+mysql-data/
+redis-data/
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+logs/
+
+# Agent browser temp
+.agent-browser/
+
+# Agent team runtime state (keep configs, exclude runtime)
+.codebuddy/teams/
+
+# Screenshots generated during testing
+*.png
+*.jpg
+
+# Playwright YAML recordings
+.playwright-cli/
+admin-login.yaml
+dash.yaml
+snap.yaml
+
+# Transient test junk files
+{
+e.message)
+r.json()))
+mvn_output.txt
+
+# Zip archives
+*.zip
+
+# Upload temp
+uploads/
+
+# Test render scripts
+test-render.*

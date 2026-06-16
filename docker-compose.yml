@@ -1,0 +1,87 @@
+# =============================================
+# 博客系统 Docker Compose 配置
+# 服务: MySQL 8 + Redis 7 + Spring Boot + Nginx
+# =============================================
+
+services:
+  # ---- MySQL 8.0 (含 ngram 中文分词) ----
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: blog
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/blog/ddl/blog-ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---- Redis 7 ----
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ---- Spring Boot 后端 ----
+  backend:
+    build:
+      context: ./blog-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/blog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ""
+      TZ: Asia/Shanghai
+      # Knife4j 生产模式关闭文档
+      KNIFE4J_PRODUCTION: "false"
+    volumes:
+      - upload_data:/data/blog/img
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---- Nginx (前端静态文件 + API 代理) ----
+  nginx:
+    build: ./nginx
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./blog-platform/blog-frontend/dist:/usr/share/nginx/html:ro
+      - ./blog-platform/blog-admin/dist:/usr/share/nginx/admin:ro
+      - upload_data:/usr/share/nginx/img-dist:ro
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  redis_data:
+  upload_data:

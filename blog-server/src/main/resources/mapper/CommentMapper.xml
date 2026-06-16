@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.CommentMapper">
+
+    <!-- 已审核评论VO resultMap -->
+    <resultMap id="commentVOResultMap" type="com.blog.vo.CommentVO">
+        <id property="id" column="id"/>
+        <result property="articleId" column="article_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="replyToId" column="reply_to_id"/>
+        <result property="authorName" column="author_name"/>
+        <result property="authorWebsite" column="author_website"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 待审核评论VO resultMap -->
+    <resultMap id="pendingCommentVOResultMap" type="com.blog.vo.PendingCommentVO">
+        <id property="id" column="id"/>
+        <result property="articleId" column="article_id"/>
+        <result property="articleTitle" column="article_title"/>
+        <result property="authorName" column="author_name"/>
+        <result property="authorEmail" column="author_email"/>
+        <result property="authorWebsite" column="author_website"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="ip" column="ip"/>
+        <result property="userAgent" column="user_agent"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 已审核评论列表 — 只查顶级评论(parent_id IS NULL)和已通过状态 -->
+    <select id="selectApprovedCommentPage" resultMap="commentVOResultMap">
+        SELECT id, article_id, parent_id, reply_to_id, author_name, author_website,
+               content, status, created_at
+        FROM comment
+        WHERE article_id = #{articleId}
+            AND status = 'APPROVED'
+            AND parent_id IS NULL
+        <choose>
+            <when test="sort == 'createdAtAsc'">ORDER BY created_at ASC</when>
+            <otherwise>ORDER BY created_at DESC</otherwise>
+        </choose>
+    </select>
+
+    <!-- 待审核评论列表 -->
+    <select id="selectPendingCommentPage" resultMap="pendingCommentVOResultMap">
+        SELECT c.id, c.article_id, a.title AS article_title,
+               c.author_name, c.author_email, c.author_website,
+               c.content, c.status, c.ip, c.user_agent, c.created_at
+        FROM comment c
+        LEFT JOIN article a ON c.article_id = a.id
+        WHERE c.status = 'PENDING'
+        ORDER BY c.created_at DESC
+    </select>
+
+</mapper>

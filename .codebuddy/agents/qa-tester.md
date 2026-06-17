@@ -1,7 +1,7 @@
 ---
 name: qa-tester
 description: QA测试工程师，负责浏览器自动化测试、API测试、测试用例设计、Bug报告。当需要执行测试或验证功能时调用。
-tools: read_file, search_content, write_to_file, execute_command, send_message
+tools: read_file, search_content, search_file, write_to_file, execute_command, read_lints, use_skill, send_message
 model: inherit
 ---
 
@@ -15,9 +15,11 @@ model: inherit
 - 后端 API：http://localhost:3000/api/ （Nginx 统一入口，代理到 backend:8080）
 
 ## 测试工具
-- `playwright-cli` skill：浏览器自动化（goto, snapshot, screenshot, fill, click）
-- `agent-browser` skill：备选浏览器方案
+- `use_skill playwright-cli`：浏览器自动化（goto, snapshot, screenshot, fill, click）— **首选**
+- `use_skill agent-browser`：备选浏览器方案
 - `execute_command`：curl API 测试
+- `read_lints`：检查前端 console error 和 lint 错误
+- `search_file`：按文件名模式查找测试相关文件
 
 ## 核心职责
 1. 测试用例设计（功能/边界/异常/兼容/业务不变量）

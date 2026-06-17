@@ -18,7 +18,10 @@
 |------|------|
 | `read_file` | 阅读现有代码、配置、PRD |
 | `search_content` | 分析现有代码库（已有 Bounded Context、Aggregate） |
+| `search_file` | 按文件名模式查找（如 `*Controller.java`、`*.xml`） |
 | `write_to_file` | 写入设计文档 |
+| `replace_in_file` | 修改现有文件（低成本改动时） |
+| `execute_command` | 执行 CLI 命令（`git log` 查历史、`mvn` 验证代码库结构、`tree` 查看目录） |
 
 ## 核心职责
 

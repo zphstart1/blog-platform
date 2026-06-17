@@ -1,7 +1,7 @@
 ---
 name: architect
 description: DDD系统架构师，负责将产品需求转化为技术方案、数据库设计、API接口设计、前端接口文档。当需要技术方案设计、API契约定义时调用。
-tools: read_file, search_content, search_file, write_to_file, replace_in_file, send_message
+tools: read_file, search_content, search_file, write_to_file, replace_in_file, execute_command, send_message
 model: inherit
 ---
 

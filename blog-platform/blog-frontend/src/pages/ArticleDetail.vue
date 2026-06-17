@@ -21,7 +21,7 @@
           <div class="article-meta">
             <span class="meta-item">
               <el-icon><User /></el-icon>
-              {{ article.author.nickname }}
+              {{ article.author?.nickname ?? '未知作者' }}
             </span>
             <span class="meta-item">
               <el-icon><Clock /></el-icon>
@@ -35,7 +35,7 @@
               {{ article.category.name }}
             </el-tag>
           </div>
-          <div v-if="article.tags.length" class="article-tags">
+          <div v-if="article.tags?.length" class="article-tags">
             <el-tag
               v-for="tag in article.tags"
               :key="tag.id"
@@ -57,13 +57,13 @@
 
         <!-- 文章导航 -->
         <div class="article-nav">
-          <div v-if="article.prevArticle" class="nav-item nav-prev">
+          <div v-if="article.prevArticle?.slug" class="nav-item nav-prev">
             <router-link :to="`/article/${article.prevArticle.slug}`">
               <span class="nav-label">上一篇</span>
               <span class="nav-title">{{ article.prevArticle.title }}</span>
             </router-link>
           </div>
-          <div v-if="article.nextArticle" class="nav-item nav-next">
+          <div v-if="article.nextArticle?.slug" class="nav-item nav-next">
             <router-link :to="`/article/${article.nextArticle.slug}`">
               <span class="nav-label">下一篇</span>
               <span class="nav-title">{{ article.nextArticle.title }}</span>
@@ -128,20 +128,15 @@ const error = ref(false)
 const article = ref<ArticleDetailType | null>(null)
 
 /**
- * Markdown 渲染：数据库只存原始 MD，前端统一用 marked 渲染
- * 单一数据源，永不出现新旧数据不一致的问题
- *
- * 注意：数据库中旧文章的 content 包含字面量 \n 转义序列（如 \\n\\n），
- * 而非真正的换行符。marked 需要真正的 \n 来识别段落/标题/列表边界，
- * 因此在渲染前统一做 normalize 处理。
+ * Markdown 渲染：统一用 marked 解析 content（Markdown 原文）
  */
 const renderedContent = computed(() => {
   if (!article.value?.content) return ''
   try {
-    // 将字面量 \n 转义序列恢复为真正的换行符，确保 marked 能正确解析 Markdown 语法
     const normalized = article.value.content
+      .replace(/\\\\/g, '\x00')
       .replace(/\\n/g, '\n')
-      .replace(/\\\\/g, '\\')
+      .replace(/\x00/g, '\\')
     return marked.parse(normalized, { breaks: true, gfm: true }) as string
   } catch {
     return article.value.content
@@ -167,13 +162,11 @@ async function fetchArticle() {
   try {
     article.value = await getArticleDetail(slug)
     document.title = `${article.value.title} - 个人博客`
-    // 渲染完成后高亮代码
     await nextTick()
     highlightCode()
-    // 文章加载成功后获取评论
     await fetchComments()
   } catch (e: any) {
-    if (e?.response?.status === 404) {
+    if (e?.code === 404 || e?.response?.status === 404) {
       article.value = null
     } else {
       error.value = true
@@ -228,7 +221,6 @@ onMounted(() => {
 </script>
 
 <style>
-/* 非 scoped：引入 GitHub Markdown 基础样式（浅色版，v-html 内容需要全局 CSS 才能生效） */
 @import 'github-markdown-css/github-markdown-light.css';
 
 .markdown-body {
@@ -291,7 +283,6 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-/* Markdown 渲染内容 — github-markdown-css 提供基础样式，这里只做少量覆盖 */
 .article-content :deep(pre) {
   background: #2d2d2d;
   border-radius: 8px;
@@ -303,7 +294,6 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-/* 文章导航 */
 .article-nav {
   display: flex;
   justify-content: space-between;
@@ -345,7 +335,6 @@ onMounted(() => {
   margin-left: auto;
 }
 
-/* 评论区 */
 .comment-section {
   background: #fff;
   border-radius: 8px;

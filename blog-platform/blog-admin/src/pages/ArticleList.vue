@@ -31,9 +31,11 @@
       <el-table-column prop="category.name" label="分类" width="120" />
       <el-table-column label="标签" width="200">
         <template #default="{ row }">
-          <el-tag v-for="tag in row.tags" :key="tag.id" size="small" type="warning" effect="plain" style="margin-right:4px">
-            {{ tag.name }}
-          </el-tag>
+          <template v-if="Array.isArray(row.tags)">
+            <el-tag v-for="tag in row.tags" :key="tag.id" size="small" type="warning" effect="plain" style="margin-right:4px">
+              {{ tag.name }}
+            </el-tag>
+          </template>
         </template>
       </el-table-column>
       <el-table-column prop="viewCount" label="阅读" width="80" />

@@ -4,11 +4,7 @@
       <AppHeader />
       <main class="blog-main">
         <div class="blog-container">
-          <router-view v-slot="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+          <router-view />
         </div>
       </main>
       <AppFooter />

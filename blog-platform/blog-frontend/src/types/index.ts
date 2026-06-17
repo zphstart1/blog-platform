@@ -49,9 +49,9 @@ export interface ArticleListItem {
   slug: string
   summary: string | null
   coverImage: string | null
-  category: { id: number; name: string; slug: string } | null
-  tags: { id: number; name: string; slug: string }[]
-  author: { id: number; nickname: string }
+  category: { id: number; name: string; slug: string; description?: string | null; articleCount?: number; children?: Category[] | null } | null
+  tags: { id: number; name: string; slug: string; articleCount?: number; weight?: number }[]
+  author: { id: number; nickname: string; avatar?: string | null }
   viewCount: number
   isTop: boolean
   status?: ArticleStatus
@@ -61,6 +61,8 @@ export interface ArticleListItem {
 /** 文章详情 */
 export interface ArticleDetail extends ArticleListItem {
   content: string
+  /** 服务端预渲染的 HTML（优先使用，不需要前端 marked 渲染） */
+  contentHtml?: string
   createdAt: string
   updatedAt: string
   prevArticle: { id: number; title: string; slug: string } | null
@@ -93,9 +95,9 @@ export interface SearchResultItem {
   slug: string
   summary: string
   coverImage: string | null
-  category: { id: number; name: string; slug: string } | null
-  tags: { id: number; name: string; slug: string }[]
-  author: { id: number; nickname: string }
+  category: { id: number; name: string; slug: string; description?: string | null; articleCount?: number; children?: Category[] | null } | null
+  tags: { id: number; name: string; slug: string; articleCount?: number; weight?: number }[]
+  author: { id: number; nickname: string; avatar?: string | null }
   viewCount: number
   publishedAt: string
   relevanceScore: number

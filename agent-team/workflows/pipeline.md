@@ -55,17 +55,27 @@ Medium+ → 完整 6 阶段流水线
   - 验收标准
 ```
 
-### 阶段 2：技术方案
+### 阶段 2：技术方案（DDD）
 ```
 负责人：架构师 (architect)
 输入：PRD 文档（阶段1产出）
 产出：
   - docs/{req-name}/02-架构设计文档.md
+    ├── 一、限界上下文识别（Context Map）
+    ├── 二、领域模型（聚合清单 + 领域模型图 + 领域事件）
+    ├── 三、分层架构设计（DDL + 缓存 + API 清单 + 文件清单）
+    └── 四、影响范围分析
   - docs/{req-name}/03-前端接口文档.md
-  - 数据库设计
-  - 接口设计
-  - 业务流程设计
+    接口按 Bounded Context 分组，标注鉴权要求
+
+🆕 契约-代码一致性校验（迭代开发时必做）：
+  - architect 输出接口文档后 → 通知 Team Lead
+  - Team Lead → send_message 给 senior-dev："请逐条确认契约中的枚举值、字段名、必填项与
+    已有代码是否一致"
+  - senior-dev 对照代码确认 → 回传修正建议 → architect 修正契约
+  - 校验通过后 → 进入阶段 3
 ```
+Small 简化版：只出第一、三章关键部分。
 
 ### 阶段 3：代码实现（动态并行）
 
@@ -98,12 +108,20 @@ Medium+ → 完整 6 阶段流水线
   - docs/{req-name}/05-前端自检报告.md
 
 后端的接口文档是前后端并行开发的核心契约，双方据此独立开发，阶段4联调测试。
+
+🆕 代码审查门禁（Gate CR）：
+  - 前后端 dev 完成 → Team Lead spawn code-reviewer
+  - code-reviewer 扫描全部新增/修改文件 → 输出审查报告
+  - P0 违规 → 打回阶段 3（禁止进入阶段 4）
+  - P1/P2 违规 + 评分 < 80 → 建议修复，不强制阻断
+  - 审查通过（P0 = 0）→ 进入阶段 4
 ```
+> **为什么审查前置**：防止 P0 违规到阶段 4 才暴露，减少返工循环。
 
 ### 阶段 4：测试验证
 ```
 负责人：测试工程师 (qa-tester)
-输入：代码 + 技术方案
+输入：代码 + 技术方案（已通过 Gate CR）
 产出：
   - docs/{req-name}/06-测试报告.md
   - 测试用例清单
@@ -112,6 +130,15 @@ Medium+ → 完整 6 阶段流水线
   - Bug 清单（如有）
   
 循环：如果存在 Bug → 进入 Bug 修复子流水线 → 重新测试 → 直到通过
+
+🆕 QA 超时兜底机制：
+  - Team Lead 派发 qa-tester 后启动 5 分钟超时定时器
+  - 超时无产出 → Team Lead 自动接管（curl 快速冒烟测试）：
+    1. 并行 curl 测试 6 个核心 API（articles / tags / categories / links / admin / frontend）
+    2. 验证 HTTP 200 + JSON 格式正确
+    3. 5 分钟内输出精简测试报告
+    4. 有 Bug → 正常走修复子流水线；无 Bug → 直接进入阶段 5
+  - 此机制仅作为兜底，优先等待 qa-tester 产出
 ```
 
 ### Bug 修复子流水线
@@ -216,9 +243,9 @@ Team Lead 判定 Bug 归属（前端/后端）
 | 阶段 | 门禁条件 | 自动化方式 |
 |------|---------|-----------|
 | 需求评审 | 七维度评估完成 + 评估结论为"建议开发" | 人工审核 |
-| 技术方案 | 架构评审通过 + 接口文档完整 + 数据库设计兼容 | 人工审核 |
-| 代码实现 | Gate 1 Lint + Gate 2 Build + Gate 3 Test | `scripts/lint-check.ps1` / `scripts/backend-check.ps1` |
-| 测试验证 | P0/P1 Bug = 0 + 通过率 ≥ 95% + console error = 0 | QA 浏览器自动化 |
+| 技术方案 | 架构评审通过 + 接口文档完整 + 数据库设计兼容 + 契约-代码一致性校验通过 | 人工审核 + senior-dev 对照确认 |
+| 代码实现 | Gate 1 Lint + Gate 2 Build + Gate 3 Test + **Gate CR 代码审查**（P0 = 0） | `scripts/lint-check.ps1` / code-reviewer |
+| 测试验证 | P0/P1 Bug = 0 + 通过率 ≥ 95% + console error = 0 | QA 浏览器自动化（超时 → Team Lead curl 兜底） |
 | 部署上线 | Gate 4 浏览器 + Gate 5 健康检查 | `curl health` + `docker ps` |
 | 交付产品 | 所有文档齐全 + 知识回写完成 | 人工审核 |
 

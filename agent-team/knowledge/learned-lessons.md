@@ -56,6 +56,23 @@
 
 ---
 
+## DDD 架构陷阱
+
+| ID | 场景 | 根因 | 修复 | 影响角色 |
+|----|------|------|------|---------|
+| DDD-001 | ApplicationService 直接注入 Mapper 统计文章数 | 开发者选择了最直接的方式而非遵循 Repository 模式，违反依赖方向 application → domain ← infrastructure | 在 Repository 接口定义方法，Impl 实现，ApplicationService 通过接口调用 | senior-dev |
+| DDD-002 | 值对象序列化为 `@{id=1; name=Java}` toString 格式 | Controller 返回 domain 对象，Jackson 对无 getter 的值对象调用 toString() | Controller 返回 VO，在 ApplicationService 中手动拆解值对象为基本类型 | senior-dev |
+| DDD-003 | 前后端枚举值大小写不一致 | 契约文档写 `"APPROVE"`，后端代码只认 `"approve"` | 以实际代码为准统一契约；或后端做大小写不敏感处理 | senior-dev + architect |
+
+### 前端整合陷阱
+
+| ID | 场景 | 根因 | 修复 | 影响角色 |
+|----|------|------|------|---------|
+| FE-001 | 拦截器自动解包后前端再次 `.data` 取数据 | 拦截器已从 `{code, data}` → data，前端未知此行为 | 前端不假设嵌套层级，`Array.isArray(result) ? result : []` | frontend-dev |
+| FE-002 | 后端返回值对象 toString 格式导致前端崩溃 | 前端期望对象却收到字符串 `"@{...}"` | 防御性编程：`typeof slug === 'string' ? slug : slug?.value` | frontend-dev |
+
+---
+
 ## 使用方式
 
 ### 任务开始时（Team Lead）

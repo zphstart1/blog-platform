@@ -4,7 +4,7 @@
       <span class="comment-author">{{ comment.authorName }}</span>
       <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
     </div>
-    <p class="comment-content">{{ comment.content }}</p>
+    <p class="comment-content">{{ commentContent }}</p>
     <div class="comment-actions">
       <span class="reply-btn" @click="showReply = !showReply">回复</span>
     </div>
@@ -32,15 +32,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { Comment } from '@/types'
 import CommentForm from './CommentForm.vue'
 import dayjs from 'dayjs'
 
-defineProps<{
+const props = defineProps<{
   comment: Comment
   articleId: number
 }>()
+
+/** 防御性处理：content 可能为值对象 { value: "..." } 或纯字符串 */
+const commentContent = computed(() => {
+  const c = props.comment.content
+  return typeof c === 'string' ? c : (c as any)?.value ?? String(c ?? '')
+})
 
 const emit = defineEmits<{
   replied: []

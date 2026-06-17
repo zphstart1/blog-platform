@@ -18,7 +18,7 @@
     <description>前后端分离个人博客系统后端服务</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <knife4j.version>4.3.0</knife4j.version>
         <jjwt.version>0.11.5</jjwt.version>

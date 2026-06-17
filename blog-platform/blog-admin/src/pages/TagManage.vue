@@ -14,8 +14,8 @@
       <el-table-column prop="articleCount" label="文章数" width="80" />
       <el-table-column label="操作" width="160">
         <template #default="{ row }">
-          <el-button text type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)">
+          <el-button text type="primary" size="small" @click="handleEdit(row as Tag)">编辑</el-button>
+          <el-popconfirm title="确定删除？" @confirm="handleDelete((row as Tag).id)">
             <template #reference>
               <el-button text type="danger" size="small">删除</el-button>
             </template>
@@ -85,7 +85,8 @@ function handleCreate() {
 function handleEdit(row: Tag) {
   editingTag.value = row
   dialogForm.name = row.name
-  dialogForm.slug = row.slug
+  // 防御性处理：slug 可能是值对象 { value: "xxx" } 或纯字符串
+  dialogForm.slug = typeof row.slug === 'string' ? row.slug : (row.slug as any)?.value ?? ''
   dialogVisible.value = true
 }
 

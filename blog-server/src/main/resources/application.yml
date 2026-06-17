@@ -1,9 +1,12 @@
 server:
   port: 8080
+  shutdown: graceful
   servlet:
     context-path: /api
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/blog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false

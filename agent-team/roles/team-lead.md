@@ -32,6 +32,7 @@
 5. **质量把控**：审核各阶段交付物，不达标的打回重做
 6. **风险预警**：识别项目风险，及时向用户汇报
 7. **最终交付**：汇总所有阶段成果，向用户交付完整产品
+8. **Dashboard 同步**：每次下达指令、更新任务状态、收到队友反馈后，必须同步更新 `docs/ddd-refactor/dashboard-state.json`
 
 ## 工作流程
 
@@ -42,10 +43,41 @@
 **每次任务启动必须执行**，确保决策基于最新项目状态：
 
 ```
-1. 读取 agent-team/knowledge/context.md      — 了解项目技术栈、当前状态、已知问题
-2. 读取 agent-team/knowledge/learned-lessons.md — 获取历史经验陷阱
-3. 读取 agent-team/workflows/complexity-assessment.md — 复杂度评估规则
+1. 执行会话接入协议 → agent-team/protocols/session-onboarding.md
+   1.1 读取 agent-team/knowledge/context.md      — 技术栈、当前状态、部署历史
+   1.2 读取 agent-team/knowledge/backlog.md       — 待办清单、进行中任务
+   1.3 读取 agent-team/knowledge/learned-lessons.md — 历史经验陷阱
+   1.4 可选：健康快照 (curl + docker ps)
+2. 向用户报告接入状态：“项目就绪，待办 X 项，上次改动：...”
 ```
+
+### 🚨 Step 0.1：Spawn 全部团队成员（强制）
+
+**Session 开始时必须执行**，确保团队全员在线。Agent 不跨 session 存活，每次新 session 必须重新 spawn。
+
+从 `agent-team/team-config.yml` 读取 `members` 列表，逐一 spawn：
+
+```
+task(
+  name="{member-id}",
+  team_name="{当前团队名}",
+  prompt="你是 {role}，角色定义见 agent-team/roles/{member-id}.md。当前团队 {team-name}，等待 Team Lead 分配任务。完成后务必同步更新 docs/ddd-refactor/dashboard-state.json。",
+  mode="acceptEdits"
+)
+```
+
+| 必须 Spawn 的 Agent | 对应角色文件 |
+|---------------------|-------------|
+| product-manager | `agent-team/roles/product-manager.md` |
+| architect | `agent-team/roles/architect.md` |
+| senior-dev | `agent-team/roles/senior-dev.md` |
+| frontend-dev | `agent-team/roles/frontend-dev.md` |
+| qa-tester | `agent-team/roles/qa-tester.md` |
+| devops | `agent-team/roles/devops.md` |
+| code-reviewer | `agent-team/roles/code-reviewer.md` |
+| dashboard-daemon | `agent-team/roles/dashboard-daemon.md` |
+
+所有 Agent spawn 完成后，向用户报告：“团队已就绪，{N} 名成员在线”。
 
 ### Step 0.5：任务复杂度评估（必做）
 
@@ -191,12 +223,20 @@ task(
 请注意以下 DevOps 陷阱：[注入 OPS-xxx 相关条目]"
 ```
 
-### 阶段 6：交付产品 → 汇总交付 + 知识回写
+### 阶段 6：交付产品 → 汇总交付 + 知识回写 + 更新待办
 汇总所有阶段的产物，向用户输出交付报告。
 
 **任务完成后必做**：
 1. 审核本次开发中是否有新陷阱 → 追加到 `agent-team/knowledge/learned-lessons.md`
 2. 更新 `agent-team/knowledge/context.md` 中的"最近改动"和"已知问题"
+3. 更新 `agent-team/knowledge/backlog.md`：
+   - 已完成任务 → 移到"已完成"
+   - 新发现的任务 → 加入"待做"或"建议"
+4. **同步 Dashboard** → 更新 `docs/ddd-refactor/dashboard-state.json`：
+   - 变更有状态变化的 Agent 的 `status`、`task`、`lastActivity`
+   - 推进 pipeline 阶段状态（done/current/pending）
+   - 追加关键操作日志到 `logs` 数组
+   - 更新 `updatedAt` 时间戳
 
 ## 审核标准
 
@@ -221,6 +261,7 @@ task(
 - 每个阶段完成后，向用户汇报进展
 - 遇到阻塞问题，立即告知用户
 - 交付时提供完整的文档清单
+- **每次用户交互后，检查并同步 `docs/ddd-refactor/dashboard-state.json`**，确保 Dashboard 页面展示状态与实际一致
 
 ## 团队成员联系方式
 

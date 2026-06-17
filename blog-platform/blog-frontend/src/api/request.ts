@@ -53,9 +53,12 @@ request.interceptors.response.use(
     if (code === 0) {
       return response.data.data as any
     }
-    // 业务错误
+    // 业务错误（保留 response 信息，让调用方能判断 code、status 等）
     ElMessage.error({ message: message || '请求失败', duration: 1000 })
-    return Promise.reject(new Error(message || '请求失败'))
+    const err = new Error(message || '请求失败') as any
+    err.response = response
+    err.code = code
+    return Promise.reject(err)
   },
   (error) => {
     // 网络错误或 HTTP 错误

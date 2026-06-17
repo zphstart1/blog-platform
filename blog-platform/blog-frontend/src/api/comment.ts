@@ -3,7 +3,7 @@
 // ============================================
 import request from './request'
 import type { PageData } from './request'
-import type { Comment, CommentForm, ReviewAction } from '@/types'
+import type { Comment, CommentForm } from '@/types'
 
 interface CommentListParams {
   page?: number
@@ -27,7 +27,7 @@ export function getPendingComments(params: { page?: number; size?: number } = {}
 }
 
 /** 审核评论 */
-export function reviewComment(id: number, action: ReviewAction) {
+export function reviewComment(id: number, action: 'approve' | 'reject') {
   return request.put<unknown, null>(`/admin/comments/${id}/review`, { action })
 }
 

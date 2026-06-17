@@ -1,6 +1,8 @@
 package com.blog.config;
 
-import com.blog.common.Ret;
+import com.blog.shared.Result;
+import com.blog.shared.AuthContext;
+import com.blog.shared.AuthContext.LoginUser;
 import com.blog.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,9 @@ public class JwtInterceptor implements HandlerInterceptor {
         currentUser.setRole(role);
         CurrentUser.set(currentUser);
 
+        // 同时设置 AuthContext（DDD 迁移兼容）
+        AuthContext.set(new LoginUser(userId, username, role));
+
         log.debug("JWT认证通过: userId={}, username={}, role={}", userId, username, role);
         return true;
     }
@@ -63,12 +68,13 @@ public class JwtInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         CurrentUser.remove();
+        AuthContext.clear();
     }
 
     private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws Exception {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        Ret<Void> ret = Ret.unauthorized(message);
-        response.getWriter().write(objectMapper.writeValueAsString(ret));
+        Result<Void> result = Result.fail(401, message);
+        response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }

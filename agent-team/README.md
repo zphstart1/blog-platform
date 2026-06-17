@@ -27,6 +27,48 @@ Team Lead 会自动：
 5. **每个阶段完成后主动通知你**
 6. 最终交付完整成果 + **回写知识库**
 
+## 🏗️ 两层架构：平台无关 + 适配层
+
+这套 Agent Team 体系设计为**跨平台可移植**：
+
+```
+agent-team/              ← 🔵 平台无关（所有 AI 工具通用）
+├── roles/               ← 角色定义（Markdown）
+├── workflows/           ← 工作流定义（Markdown）
+├── knowledge/           ← 共享知识库（Markdown）
+├── protocols/           ← 协作协议（Markdown）
+├── scripts/             ← 自动化脚本（PowerShell/Bash）
+├── integrations/        ← 外部集成配置（YAML）
+└── team-config.yml      ← 团队配置（YAML）
+
+.codebuddy/              ← 🟠 CodeBuddy 适配层（仅 CodeBuddy 需要）
+├── agents/*.md          ← roles → CodeBuddy agent 格式
+├── skills/init-team/    ← workflows/init-team.md → CodeBuddy skill
+└── teams/               ← 运行时数据（自动生成，.gitignore）
+```
+
+### 如何使用（非 CodeBuddy 用户）
+
+1. **阅读角色定义**：打开 `agent-team/roles/` 了解每个角色的职责
+2. **阅读工作流**：打开 `agent-team/workflows/` 了解流水线和初始化流程
+3. **创建适配层**：为你的 AI 工具创建类似 `.codebuddy/` 的目录
+4. **转换格式**：将角色 Markdown 转为你的工具支持的格式（如 Cursor 的 `.cursorrules`、Copilot 的 instructions）
+
+### 平台适配示例
+
+| AI 工具 | 适配方式 | 参考 |
+|---------|---------|------|
+| **CodeBuddy** | `.codebuddy/agents/*.md` + `.codebuddy/skills/` | ✅ 已实现 |
+| **Cursor** | `.cursor/rules/` 加载角色定义 | 可参考 `.codebuddy/` 自行创建 |
+| **GitHub Copilot** | `.github/copilot-instructions.md` 引用 | 可参考 `.codebuddy/` 自行创建 |
+| **Cline / Roo Code** | `.clinerules` 或自定义 instructions | 可参考 `.codebuddy/` 自行创建 |
+| **通用 CLI** | 将 `agent-team/` 作为 prompt 模板库 | 开箱可读 |
+
+> 核心设计理念：`agent-team/` 是**规范**，`.codebuddy/` 是**一种实现**。
+> 你可以在任何 AI 工具中引用 `agent-team/` 来手动驱动团队流程，或编写适配层实现自动化。
+
+---
+
 ## 👥 团队阵容
 
 | 成员 | 角色 | 汇报机制 | 直接通信 |
@@ -39,7 +81,7 @@ Team Lead 会自动：
 | qa-tester | 测试工程师 🔍 | 完成即汇报 | Dev, DevOps |
 | devops | 运维工程师 🚀 | 完成即汇报 | QA |
 
-## 🔄 交付流水线
+## 🔄 交付流水线（7 阶段）
 
 ```
 你的任务 → Team Lead 接收
@@ -48,17 +90,15 @@ Team Lead 会自动：
               │     Tiny: 跳过①②⑥ → 直接③④⑤
               │     Small: 跳过① → ②简化版③④⑤
               │
-              ├─→ ① 产品经理：需求评审 ──→ 通知main ✅
-              ├─→ ② 架构师：技术方案 ──→ 通知main ✅
-              ├─→ ③ 代码实现（前后端并行）──→ 通知main ✅
-              │    ├── Java后端
+              ├─→ ① 产品经理：需求评审 ──→ 通知 ✅
+              ├─→ ② 架构师：技术方案 ──→ 通知 ✅
+              ├─→ ③ 代码实现（前后端并行）──→ 通知 ✅
+              │    ├── Java 后端
               │    └── 前端开发
-              ├─→ ④ 测试：质量验证 ──→ 通知main ✅
-              │    └── 自动执行 Gate 3-4 质量门禁
-              │         ↓ (Bug→打回③→修复→重测，循环直到P0/P1=0)
-              ├─→ ⑤ 运维：部署上线 ──→ 通知main ✅
-              │    └── 自动执行 Gate 4-5 健康检查
-              ├─→ ⑥ Team Lead：交付产品 ──→ 通知main ✅
+              ├─→ ④ 测试：质量验证 ──→ 通知 ✅
+              │    └── Bug→打回③→修复→重测，循环直到通过
+              ├─→ ⑤ 运维：部署上线 ──→ 通知 ✅
+              ├─→ ⑥ Team Lead：交付产品 ──→ 通知 ✅
               └─→ ⑦ 知识回写（v4 新增）──→ 更新知识库
 ```
 
@@ -67,7 +107,7 @@ Team Lead 会自动：
 ### 1. 智能复杂度评估
 任务自动分级：Tiny / Small / Medium / Large / XLarge
 - 文案修改、小 Bug → 直接进入编码，跳过评审阶段
-- 新功能 → 完整 6 阶段流水线
+- 新功能 → 完整 7 阶段流水线（含交付产品 + 知识回写）
 - 大项目 → 完整 + 扩容 + 审批
 
 详见 `workflows/complexity-assessment.md`
@@ -110,14 +150,16 @@ agent-team/
 │   ├── qa-tester.md                   # 测试工程师（v4：质量门禁）
 │   └── devops.md                      # 运维工程师（v4：CI/CD 集成）
 ├── protocols/                         # 协作协议
-│   ├── communication.md               # 通信协议（v4：直接通信通道）
-│   └── quality-gates.md               # 质量门禁定义（v4 新增）
+│   ├── communication.md               # 通信协议（v4：直接通信通道 + 忙碌处理）
+│   ├── quality-gates.md               # 质量门禁定义（v4 新增）
+│   └── session-onboarding.md          # 会话接入协议（v4 新增：跨会话恢复）
 ├── workflows/                         # 工作流定义
 │   ├── pipeline.md                    # 交付流水线（v4：复杂度跳转 + 门禁）
 │   └── complexity-assessment.md       # 复杂度评估规则（v4 新增）
 ├── knowledge/                         # 共享知识库（v4 新增）
-│   ├── context.md                     # 项目上下文（跨会话共享）
-│   └── learned-lessons.md             # 经验陷阱库（自学习）
+│   ├── context.md                     # 项目上下文（跨会话共享 + 部署历史）
+│   ├── learned-lessons.md             # 经验陷阱库（自学习）
+│   └── backlog.md                     # 任务待办清单（跨会话持久化）
 ├── scripts/                           # 自动化脚本（v4 新增）
 │   ├── lint-check.ps1                 # 前端质量门禁
 │   └── backend-check.ps1              # 后端质量门禁

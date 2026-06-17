@@ -116,6 +116,12 @@
 - 验证结果
 - 异常记录（如有）
 
+### ✅ 完成后回写 context（持久化必做）
+- 在 `context.md` 中追加"部署历史"
+- 更新"当前系统状态"（组件运行状态）
+- 如有部署陷阱，写入 `learned-lessons.md`（OPS-xxx 系列）
+- **同步 Dashboard** → 更新 `docs/ddd-refactor/dashboard-state.json` 中 devops 的状态、task、lastActivity，并追加部署日志
+
 ## 监控配置建议
 
 | 监控项 | 指标 | 告警阈值 |

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDD Team Dashboard · 贯穿全项目</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --orange: #d2991d; --red: #f85149;
+    --purple: #a371f7; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  header {
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  header h1 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 4px var(--green); } 50% { box-shadow: 0 0 12px var(--green), 0 0 20px var(--green); } }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.25); }
+  .phase-badge { font-size: 11px; padding: 3px 12px; border-radius: 4px; background: rgba(63,185,80,0.12); color: var(--green); }
+  .status-bar { font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; align-items: center; }
+  .refresh-indicator { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 4px; }
+
+  main {
+    flex: 1; display: flex; flex-direction: column;
+    gap: 1px; background: var(--border); overflow: hidden;
+  }
+
+  /* Progress Bar */
+  .progress-section {
+    background: var(--panel); padding: 10px 20px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 3px; transition: width 1s ease; }
+  .progress-text { font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+  /* Content Row: Agents (left) + Pipeline (right) */
+  .content-row {
+    flex: 1; display: flex; gap: 1px; min-height: 0;
+  }
+  .content-row .agents-panel {
+    flex: 1; min-width: 0;
+  }
+  .content-row .pipeline-panel {
+    width: 300px; flex-shrink: 0;
+  }
+
+  .panel {
+    background: var(--panel); padding: 14px 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .panel h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-dim); margin-bottom: 10px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Agents */
+  .agents-grid {
+    flex: 1; display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px; overflow-y: auto; align-content: start;
+  }
+  .agent-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; position: relative; overflow: hidden; transition: border-color 0.5s;
+  }
+  .agent-card.active { border-color: rgba(63,185,80,0.4); }
+  .agent-card.active::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    animation: scan 2s ease-in-out infinite;
+  }
+  @keyframes scan { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+  .agent-card .head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .agent-card .avatar {
+    width: 26px; height: 26px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .agent-card .name { font-size: 13px; font-weight: 600; flex: 1; }
+  .agent-card .status-icon { font-size: 10px; }
+  .agent-card .task { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+  .agent-card .badges { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .agent-card .tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(88,166,255,0.08); color: var(--accent);
+  }
+
+  /* Pipeline */
+  .pipeline-list { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+  .pipeline-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; font-size: 11px; }
+  .pipeline-item.done { background: rgba(63,185,80,0.06); }
+  .pipeline-item.current { background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.15); }
+  .pipeline-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; flex-shrink: 0;
+  }
+  .pipeline-item.done .pipeline-dot { background: var(--green); color: #fff; }
+  .pipeline-item.current .pipeline-dot { background: var(--accent); color: #fff; animation: pulse 2s infinite; }
+  .pipeline-item.pending .pipeline-dot { background: var(--border); color: var(--text-dim); }
+  .pipeline-item.skipped .pipeline-dot { background: var(--border); color: var(--text-dim); opacity: 0.5; }
+  .pipeline-info { flex: 1; min-width: 0; }
+  .pipeline-name { font-weight: 600; }
+  .pipeline-owner { font-size: 10px; color: var(--text-dim); }
+  .pipeline-note { font-size: 10px; color: var(--orange); }
+
+  /* Log */
+  .log-area {
+    background: var(--panel); padding: 14px 16px; flex-shrink: 0;
+    display: flex; flex-direction: column; overflow: hidden;
+    height: 320px;
+  }
+  .log-area h2 { flex-shrink: 0; }
+  .log-container {
+    flex: 1; overflow-y: auto; font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 11px; line-height: 1.7; background: var(--bg);
+    border-radius: 6px; padding: 8px 10px;
+  }
+  .log-entry { display: flex; gap: 8px; padding: 1px 0; }
+  .log-time { color: var(--text-dim); flex-shrink: 0; width: 36px; }
+  .log-agent { color: var(--accent); flex-shrink: 0; min-width: 80px; }
+  .log-msg { word-break: break-all; }
+  .log-entry.warn .log-msg { color: var(--orange); }
+  .log-entry.error .log-msg { color: var(--red); }
+  .log-entry.success .log-msg { color: var(--green); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span class="live-dot"></span>
+    <span>DDD Refactor · Team Dashboard</span>
+    <span class="badge" id="modeBadge">实时数据</span>
+  </h1>
+  <div class="status-bar">
+    <span>阶段: <span class="phase-badge" id="phaseLabel">--</span></span>
+    <span>更新: <span id="updateTime">--</span></span>
+    <span class="refresh-indicator">⏱ <span id="nextRefresh">2s</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="progress-section">
+    <span class="progress-text" id="progressLabel">0/8</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="content-row">
+    <div class="panel agents-panel">
+      <h2>👥 Agent 团队</h2>
+      <div class="agents-grid" id="agentsGrid"></div>
+    </div>
+    <div class="panel pipeline-panel">
+      <h2>🔄 流水线</h2>
+      <div class="pipeline-list" id="pipelineList"></div>
+    </div>
+  </div>
+
+  <div class="log-area">
+    <h2>📜 实时日志 <span style="color:var(--text-dim);font-weight:400;font-size:10px;margin-left:8px" id="logCount">0 条</span></h2>
+    <div class="log-container" id="logContainer"></div>
+  </div>
+</main>
+
+<script>
+const STATE_URL = 'dashboard-state.json';
+let lastLogCount = 0;
+let fetchCount = 0;
+
+function statusIcon(s) {
+  return s === 'active' ? '🟢' : s === 'pending' ? '⏳' : '✅';
+}
+
+function renderAll(state) {
+  // Phase
+  document.getElementById('phaseLabel').textContent = state.phase;
+  document.getElementById('updateTime').textContent = state.updatedAt?.slice(11,16) || '--';
+
+  // Progress
+  const total = state.pipeline.length;
+  const done = state.pipeline.filter(p => p.status === 'done' || p.status === 'skipped').length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressLabel').textContent = `${done}/${total}`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Agents
+  document.getElementById('agentsGrid').innerHTML = state.agents.map(a => `
+    <div class="agent-card ${a.status}">
+      <div class="head">
+        <div class="avatar" style="background:${a.color}22; color:${a.color}">${a.emoji}</div>
+        <span class="name">${a.name}</span>
+        <span class="status-icon">${statusIcon(a.status)}</span>
+      </div>
+      <div class="task">${a.task}</div>
+      <div class="badges">
+        ${a.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Pipeline
+  document.getElementById('pipelineList').innerHTML = state.pipeline.map(s => `
+    <div class="pipeline-item ${s.status}">
+      <div class="pipeline-dot">${s.status === 'done' ? '✓' : s.status === 'skipped' ? '−' : '●'}</div>
+      <div class="pipeline-info">
+        <div class="pipeline-name">${s.name}</div>
+        <div class="pipeline-owner">${s.owner}${s.note ? ' · ' + s.note : ''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Logs (only render new ones)
+  const logs = state.logs || [];
+  if (logs.length !== lastLogCount) {
+    document.getElementById('logContainer').innerHTML = logs.map(l => `
+      <div class="log-entry ${l.type}">
+        <span class="log-time">[${l.time}]</span>
+        <span class="log-agent">${l.agent}</span>
+        <span class="log-msg">${l.msg}</span>
+      </div>
+    `).join('');
+    document.getElementById('logContainer').scrollTop = document.getElementById('logContainer').scrollHeight;
+    document.getElementById('logCount').textContent = logs.length + ' 条';
+    lastLogCount = logs.length;
+  }
+}
+
+function fetchState() {
+  fetchCount++;
+  const secondsLeft = Math.max(0, 2 - (fetchCount % 3));
+  document.getElementById('nextRefresh').textContent = secondsLeft + 's';
+  
+  fetch(STATE_URL + '?t=' + Date.now())
+    .then(r => r.json())
+    .then(state => {
+      renderAll(state);
+    })
+    .catch(err => {
+      document.getElementById('modeBadge').textContent = '离线模式';
+      document.getElementById('modeBadge').style.color = 'var(--orange)';
+      document.getElementById('modeBadge').style.borderColor = 'rgba(210,153,29,0.3)';
+      document.getElementById('modeBadge').style.background = 'rgba(210,153,29,0.1)';
+      console.log('State fetch failed (server starting?)', err);
+    });
+}
+
+// Initial
+fetchState();
+// Poll every 2s
+setInterval(fetchState, 2000);
+</script>
+
+</body>
+</html>

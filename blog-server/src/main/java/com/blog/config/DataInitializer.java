@@ -1,7 +1,7 @@
 package com.blog.config;
 
-import com.blog.entity.User;
-import com.blog.mapper.UserMapper;
+import com.blog.user.infrastructure.UserMapper;
+import com.blog.user.infrastructure.UserPO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +31,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // 检查是否已存在 OWNER 用户
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getRole, "OWNER");
+        LambdaQueryWrapper<UserPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserPO::getRole, "OWNER");
         Long count = userMapper.selectCount(wrapper);
 
         if (count != null && count > 0) {
@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // 创建默认管理员
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        User admin = new User();
+        UserPO admin = new UserPO();
         admin.setUsername(DEFAULT_USERNAME);
         admin.setPassword(encoder.encode(DEFAULT_PASSWORD));
         admin.setEmail(DEFAULT_EMAIL);

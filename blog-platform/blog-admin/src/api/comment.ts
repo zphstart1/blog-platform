@@ -6,7 +6,7 @@ export function getPendingComments(params: { page?: number; size?: number } = {}
   return request.get<unknown, PageData<Comment>>('/admin/comments/pending', { params })
 }
 
-export function reviewComment(id: number, action: ReviewAction) {
+export function reviewComment(id: number, action: 'approve' | 'reject') {
   return request.put<unknown, null>(`/admin/comments/${id}/review`, { action })
 }
 

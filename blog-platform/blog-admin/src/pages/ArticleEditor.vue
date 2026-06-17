@@ -228,8 +228,9 @@ onMounted(async () => {
       form.content = article.content || ''
       form.summary = article.summary || ''
       form.coverImage = article.coverImage || ''
-      form.categoryId = article.category?.id ?? null
-      form.tagIds = article.tags?.map(t => t.id) ?? []
+      // 优先使用后端直接返回的 categoryId / tagIds，兼容从嵌套对象推导
+      form.categoryId = article.categoryId ?? article.category?.id ?? null
+      form.tagIds = article.tagIds?.length ? article.tagIds : (article.tags?.map(t => t.id) ?? [])
       isTop.value = article.isTop
     } catch { /* handled */ }
   }

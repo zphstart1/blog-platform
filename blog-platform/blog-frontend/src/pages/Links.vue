@@ -40,9 +40,9 @@ const links = ref<Link[]>([])
 onMounted(async () => {
   loading.value = true
   try {
-    // 友链接口（P1），暂时使用 /api/links
-    const result = await request.get('/links')
-    links.value = (result as any).data || result || []
+    // 友链接口，拦截器已自动解包 {code, data} → data
+    const result = await request.get<unknown, Link[]>('/links')
+    links.value = Array.isArray(result) ? result : []
   } catch {
     // 友链接口可能暂未实现，静默
   } finally {

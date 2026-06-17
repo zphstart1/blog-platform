@@ -15,10 +15,10 @@
       </el-table-column>
       <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
-          <el-button type="success" size="small" @click="handleReview(row.id, 'APPROVE')">
+          <el-button type="success" size="small" @click="handleReview(row.id, 'approve')">
             <el-icon><Select /></el-icon> 通过
           </el-button>
-          <el-button type="warning" size="small" @click="handleReview(row.id, 'REJECT')">
+          <el-button type="warning" size="small" @click="handleReview(row.id, 'reject')">
             拒绝
           </el-button>
           <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)">
@@ -69,10 +69,10 @@ async function fetchList() {
   finally { loading.value = false }
 }
 
-async function handleReview(id: number, action: 'APPROVE' | 'REJECT') {
+async function handleReview(id: number, action: 'approve' | 'reject') {
   try {
     await reviewComment(id, action)
-    ElMessage.success({ message: action === 'APPROVE' ? '审核通过' : '已拒绝', duration: 1000 })
+    ElMessage.success({ message: action === 'approve' ? '审核通过' : '已拒绝', duration: 1000 })
     fetchList()
   } catch { /* handled */ }
 }

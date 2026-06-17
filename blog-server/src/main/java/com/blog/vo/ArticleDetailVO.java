@@ -16,6 +16,7 @@ public class ArticleDetailVO {
     private String title;
     private String slug;
     private String content;
+    private String contentHtml;
     private String summary;
     private String coverImage;
     private CategoryVO category;

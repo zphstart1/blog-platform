@@ -97,6 +97,7 @@ Team Lead 向成员派发任务时，必须遵循以下格式：
 | Bug 信息澄清 | QA | Dev (backend/frontend) | 仅澄清复现步骤，不派活 |
 | 前端 Bug 澄清 | QA | Frontend Dev | 仅澄清 UI 异常/console error |
 | API 契约变更通知 | Backend Dev | Frontend Dev | 通知路径/参数变化 |
+| API 不一致报告 🆕 | Frontend Dev | Backend Dev | 前端发现后端返回与契约不一致时通知，附具体差异 |
 | 测试环境确认 | QA | DevOps | 确认环境就绪状态 |
 
 ### 直接通信格式
@@ -117,6 +118,7 @@ send_message(
 | "这个 Bug 的复现步骤能否再详细描述？" | "这个 Bug 你修一下" |
 | "API 返回字段从 `name` 改为 `title`" | "顺带把前端对接逻辑也改了" |
 | "测试环境 8080 端口是否已启动？" | "帮我在测试环境部署一下" |
+| 🆕 "评论审核 action 契约写大写但后端只认小写，确认下以谁为准？" | "我把 action 参数改成小写了，你也改下" |
 
 **违反红线的后果**：接收方应拒绝执行，并转发给 Team Lead 裁决。
 

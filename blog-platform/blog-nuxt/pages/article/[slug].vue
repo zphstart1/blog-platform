@@ -29,8 +29,8 @@
         </div>
       </header>
 
-      <!-- 文章内容 -->
-      <div class="article-content" v-html="article.contentHtml" />
+      <!-- 文章内容（优先服务端预渲染 HTML，fallback 到原文） -->
+      <div class="article-content" v-html="article.contentHtml || article.content" />
 
       <!-- 文章导航 -->
       <nav class="article-nav">
